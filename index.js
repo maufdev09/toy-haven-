@@ -26,6 +26,17 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    const db = client.db("toyhaven").collection("toys");
+    console.log("database conected");
+
+    app.post("/posttoys", async (req, res) => {
+      const body = req.body;
+      const result = await db.insertOne(body);
+      res.send(result);
+      //   console.log(body);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
