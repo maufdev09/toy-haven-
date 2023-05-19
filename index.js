@@ -34,9 +34,18 @@ async function run() {
       const body = req.body;
       const result = await db.insertOne(body);
       res.send(result);
-      //   console.log(body);
     });
 
+    app.get("/allcars/:text", async (req, res) => {
+      if (req.params.text == "all") {
+        const result = await db.find().toArray();
+        res.send(result);
+      }
+      const result = await db.find({ category: req?.params?.text }).toArray();
+      res.send(result);
+    });
+
+    // ....................................................................
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
