@@ -58,7 +58,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/allcars/:text", async (req, res) => {
+    app.get("/allcars/category/:text", async (req, res) => {
       if (req.params.text == "all") {
         const result = await db.find().toArray();
         res.send(result);
@@ -75,13 +75,33 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/mycars/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await db.find({ sellerEmail: email }).toArray();
+      res.send(result);
+    });
+
     app.get("/allcars", async (req, res) => {
       const limit = parseInt(req.query.limit) || 20;
 
       const result = await db.find().limit(limit).toArray();
       res.send(result);
     });
-    // ...................................................................
+
+    app.put("/updatejob/:id", async (req, res) => {
+      const id = req.params.id;
+      const body = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          description: body.description,
+          price: body.price,
+          quantity: body.quantity,
+        },
+      };
+      const result = await db.updateOne(filter, updateDoc);
+      res.send(result);
+    });
 
     // ....................................................................
     // Send a ping to confirm a successful connection
