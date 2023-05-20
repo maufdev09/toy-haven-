@@ -7,7 +7,7 @@ require("dotenv").config();
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.usnrx4f.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -30,8 +30,30 @@ async function run() {
     const db = client.db("toyhaven").collection("toys");
     console.log("database conected");
 
+    const indexKeys = { Name: 1, category: 1 };
+    const indexOptions = { name: "nameCategory" };
+
+    const result = await db.createIndex(indexKeys, indexOptions);
+
+    app.get("/allcars/:text", async (req, res) => {
+      const searchText = req.params.text;
+      const limit = parseInt(req.query.limit) || 20;
+
+      const result = await db
+        .find({
+          $or: [
+            { Name: { $regex: searchText, $options: "i" } },
+            { category: { $regex: searchText, $options: "i" } },
+          ],
+        })
+        .limit(limit)
+        .toArray();
+      res.send(result);
+    });
+
     app.post("/posttoys", async (req, res) => {
       const body = req.body;
+      body.createdAt = new Date();
       const result = await db.insertOne(body);
       res.send(result);
     });
@@ -40,10 +62,24 @@ async function run() {
       if (req.params.text == "all") {
         const result = await db.find().toArray();
         res.send(result);
+      } else {
+        const result = await db.find({ category: req?.params?.text }).toArray();
+        res.send(result);
       }
-      const result = await db.find({ category: req?.params?.text }).toArray();
+    });
+
+    app.get("/toy/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await db.findOne(query);
       res.send(result);
     });
+
+    app.get("/allcars", async (req, res) => {
+      const result = await db.find().toArray();
+      res.send(result);
+    });
+    // ...................................................................
 
     // ....................................................................
     // Send a ping to confirm a successful connection
