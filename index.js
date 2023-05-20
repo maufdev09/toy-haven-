@@ -110,6 +110,18 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/mycar/:email", async (req, res) => {
+      const email = req.params.email;
+      const sortOrder = req.query.sort || "asc"; // Default sort order is ascending
+
+      let toys = await db
+        .find({ sellerEmail: email })
+        .sort({ price: sortOrder === "asc" ? 1 : -1 })
+        .toArray();
+
+      res.send(toys);
+    });
+
     // ....................................................................
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
