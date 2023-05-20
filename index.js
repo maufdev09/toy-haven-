@@ -76,7 +76,9 @@ async function run() {
     });
 
     app.get("/allcars", async (req, res) => {
-      const result = await db.find().toArray();
+      const limit = parseInt(req.query.limit) || 20;
+
+      const result = await db.find().limit(limit).toArray();
       res.send(result);
     });
     // ...................................................................
